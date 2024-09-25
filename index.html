@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adjust Device API Tester</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Adjust Device API Tester</h1>
+
+        <div class="mb-8 bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">API Token (Optional)</h2>
+            <div class="mb-4">
+                <label for="apiToken" class="block text-sm font-medium text-gray-700 mb-2">Custom Adjust API Token:</label>
+                <input type="text" id="apiToken" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter custom API Token (optional)">
+            </div>
+        </div>
+
+        <div class="mb-8 bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Inspect Device</h2>
+            <form id="inspectForm" class="space-y-4">
+                <div>
+                    <label for="inspectAppToken" class="block text-sm font-medium text-gray-700 mb-2">App Token:</label>
+                    <input type="text" id="inspectAppToken" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your app token">
+                </div>
+                <div>
+                    <label for="advertisingId" class="block text-sm font-medium text-gray-700 mb-2">Advertising ID:</label>
+                    <input type="text" id="advertisingId" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter the advertising ID">
+                </div>
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Inspect Device</button>
+            </form>
+            <pre id="inspectResult" class="mt-4 bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"></pre>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Forget Device</h2>
+            <form id="forgetForm" class="space-y-4">
+                <div>
+                    <label for="forgetAppToken" class="block text-sm font-medium text-gray-700 mb-2">App Token:</label>
+                    <input type="text" id="forgetAppToken" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your app token">
+                </div>
+                <div>
+                    <label for="adid" class="block text-sm font-medium text-gray-700 mb-2">ADID:</label>
+                    <input type="text" id="adid" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter the ADID">
+                </div>
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Forget Device</button>
+            </form>
+            <pre id="forgetResult" class="mt-4 bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"></pre>
+        </div>
+    </div>
+
+    <script>
+        const apiBaseUrl = 'https://api.adjust.com';
+        const defaultApiToken = 'ug9cPvyZTZKTdfh3RZYK';
+
+        document.getElementById('inspectForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const apiToken = document.getElementById('apiToken').value || defaultApiToken;
+            const appToken = document.getElementById('inspectAppToken').value;
+            const advertisingId = document.getElementById('advertisingId').value;
+            try {
+                const response = await axios.get(`${apiBaseUrl}/device_service/api/v2/inspect_device`, {
+                    params: { app_token: appToken, advertising_id: advertisingId },
+                    headers: { 'Authorization': `Bearer ${apiToken}` }
+                });
+                document.getElementById('inspectResult').textContent = JSON.stringify(response.data, null, 2);
+            } catch (error) {
+                document.getElementById('inspectResult').textContent = `Error: ${error.response ? error.response.data : error.message}`;
+            }
+        });
+
+        document.getElementById('forgetForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const apiToken = document.getElementById('apiToken').value || defaultApiToken;
+            const appToken = document.getElementById('forgetAppToken').value;
+            const adid = document.getElementById('adid').value;
+            try {
+                const response = await axios.post(`${apiBaseUrl}/device_service/api/v1/forget_device`, 
+                    `adid=${adid}&app_token=${appToken}`,
+                    { headers: { 'Authorization': `Token token=${apiToken}` } }
+                );
+                document.getElementById('forgetResult').textContent = 'Device forgotten successfully';
+            } catch (error) {
+                document.getElementById('forgetResult').textContent = `Error: ${error.response ? error.response.data : error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
